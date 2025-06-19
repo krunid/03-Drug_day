@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แบบทดสอบวันต่อต้านยาเสพติด</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background-color: #f0f9ff;
+    }
+
+    .tab {
+      @apply px-4 py-2 text-sm font-medium rounded-t-lg;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      @apply bg-blue-500 text-white;
+    }
+
+    .tab:not(.active) {
+      @apply bg-gray-200 text-gray-700 hover: bg-blue-100;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .quiz-option {
+      @apply p-4 border rounded-lg mb-3 cursor-pointer transition-all flex items-center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quiz-option:hover {
+      @apply bg-blue-50 border-blue-300;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .quiz-option.selected {
+      @apply bg-blue-100 border-blue-500;
+    }
+
+    .quiz-option.correct {
+      @apply bg-green-100 border-green-500;
+    }
+
+    .quiz-option.incorrect {
+      @apply bg-red-100 border-red-500;
+    }
+
+    .option-label {
+      @apply flex items-center justify-center rounded-full w-8 h-8 mr-4 font-bold text-white;
+      background-color: #4299e1;
+      flex-shrink: 0;
+    }
+
+    .quiz-option.selected .option-label {
+      background-color: #2b6cb0;
+    }
+
+    .quiz-option.correct .option-label {
+      background-color: #48bb78;
+    }
+
+    .quiz-option.incorrect .option-label {
+      background-color: #f56565;
+    }
+
+    .progress-container {
+      @apply bg-gray-200 rounded-full h-4 mb-6;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      @apply bg-blue-500 h-full;
+      transition: width 0.3s ease;
+    }
+
+    .certificate {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath fill='%23f0f9ff' d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill-opacity='0.1'/%3E%3C/svg%3E");
+      border: 10px solid #4299e1;
+      position: relative;
+    }
+
+    .certificate::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath fill='%234299e1' d='M14 16H9v-2h5V9.87a4 4 0 1 1 2 0V14h5v2h-5v15.95A10 10 0 0 0 23.66 27l-3.46-2 8.2-2.2-2.9 5a12 12 0 0 1-21 0l-2.89-5 8.2 2.2-3.47 2A10 10 0 0 0 14 31.95V16zm40 40h-5v-2h5v-4.13a4 4 0 1 1 2 0V54h5v2h-5v15.95A10 10 0 0 0 63.66 67l-3.47-2 8.2-2.2-2.88 5a12 12 0 0 1-21.02 0l-2.88-5 8.2 2.2-3.47 2A10 10 0 0 0 54 71.95V56zm-39 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm40-40a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM15 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm40 40a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'%3E%3C/path%3E%3C/svg%3E");
+      opacity: 0.05;
+      z-index: -1;
+    }
+
+    .dashboard-card {
+      @apply bg-white rounded-lg shadow-md p-6 transition-transform duration-300;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .question-number {
+      @apply flex items-center justify-center rounded-full w-10 h-10 bg-blue-500 text-white font-bold text-lg;
+      flex-shrink: 0;
+    }
+
+    .question-card {
+      @apply p-6 bg-white border rounded-lg shadow-sm mb-8;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .question-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .explanation-box {
+      @apply mt-4 p-4 rounded-lg;
+      border-left: 4px solid;
+    }
+
+    .explanation-box.correct {
+      @apply bg-green-50;
+      border-color: #48bb78;
+    }
+
+    .explanation-box.incorrect {
+      @apply bg-red-50;
+      border-color: #f56565;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #certificate-print,
+      #certificate-print * {
+        visibility: visible;
+      }
+
+      #certificate-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-bold text-blue-600">📚 แบบทดสอบวันต่อต้านยาเสพติด 🛑</h1>
+      <p class="text-gray-600 mt-2">สำหรับนักเรียนระดับชั้นประถมศึกษา</p>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="flex flex-wrap mb-4 border-b border-gray-200">
+      <button class="tab active" onclick="showTab('home')">🏠 หน้าแรก</button>
+      <button class="tab" onclick="showTab('quiz')" id="quiz-tab" disabled>📝 แบบทดสอบ</button>
+      <button class="tab" onclick="showTab('dashboard')">📊 แดชบอร์ด</button>
+      <button class="tab" onclick="showTab('certificate')">🏆 เกียรติบัตร</button>
+      <button class="tab" onclick="showTab('scores')">📋 ตารางคะแนน</button>
+    </div>
+
+    <!-- Tab Contents -->
+    <!-- Home Tab -->
+    <div id="home" class="tab-content active">
+      <div class="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+        <h2 class="text-2xl font-bold text-center mb-6">👋 ลงชื่อเข้าใช้งาน</h2>
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล</label>
+            <input type="text" id="name" name="name" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="classroom" class="block text-sm font-medium text-gray-700 mb-1">ชั้นเรียน</label>
+            <select id="classroom" name="classroom" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">-- เลือกชั้นเรียน --</option>
+                            <option value="ป.1">ประถมศึกษาปีที่ 1</option>
+                            <option value="ป.2">ประถมศึกษาปีที่ 2</option>
+                            <option value="ป.3">ประถมศึกษาปีที่ 3</option>
+                            <option value="ป.4">ประถมศึกษาปีที่ 4</option>
+                            <option value="ป.5">ประถมศึกษาปีที่ 5</option>
+                            <option value="ป.6">ประถมศึกษาปีที่ 6</option>
+                        </select>
+          </div>
+          <div>
+            <label for="school" class="block text-sm font-medium text-gray-700 mb-1">โรงเรียน</label>
+            <input type="text" id="school" name="school" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                        เริ่มทำแบบทดสอบ
+                    </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Quiz Tab -->
+    <div id="quiz" class="tab-content">
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">📝 แบบทดสอบวันต่อต้านยาเสพติด</h2>
+          <div>
+            <span class="font-medium text-blue-600" id="user-info-display"></span>
+          </div>
+        </div>
+
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+          <p class="font-medium">📋 คำชี้แจง: แบบทดสอบมีทั้งหมด 10 ข้อ ข้อละ 10 คะแนน</p>
+          <p>เมื่อตอบคำถามแล้วจะแสดงเฉลยและคำอธิบายทันที</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-bar" id="quiz-progress" style="width: 0%"></div>
+        </div>
+
+        <!-- Quiz Status -->
+        <div class="flex justify-between items-center mb-6">
+          <div class="text-sm font-medium text-gray-600">
+            ตอบแล้ว: <span id="answered-count">0</span>/10
+          </div>
+          <div class="text-sm font-medium text-blue-600">
+            คะแนนปัจจุบัน: <span id="current-score">0</span>/100
+          </div>
+        </div>
+
+        <div id="quiz-container" class="space-y-8">
+          <!-- Quiz questions will be generated here -->
+        </div>
+
+        <div id="quiz-result" class="mt-8 p-6 bg-blue-50 rounded-lg text-center hidden">
+          <h3 class="text-2xl font-bold mb-2">🎉 ผลการทดสอบ</h3>
+          <p class="text-xl mb-4">คะแนนของคุณ: <span id="final-score" class="font-bold text-blue-600">0</span> / 100</p>
+          <div class="flex justify-center">
+            <button id="save-result" class="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition duration-300 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            บันทึกผลการทดสอบ
+                        </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-content">
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">📊 แดชบอร์ด</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="dashboard-card bg-blue-50">
+            <h3 class="text-lg font-semibold mb-2">👨‍🎓 จำนวนผู้เข้าทดสอบ</h3>
+            <p class="text-3xl font-bold text-blue-600" id="total-participants">0</p>
+          </div>
+          <div class="dashboard-card bg-green-50">
+            <h3 class="text-lg font-semibold mb-2">✅ ผ่านเกณฑ์ (60%)</h3>
+            <p class="text-3xl font-bold text-green-600" id="passed-count">0</p>
+          </div>
+          <div class="dashboard-card bg-yellow-50">
+            <h3 class="text-lg font-semibold mb-2">🏆 คะแนนเฉลี่ย</h3>
+            <p class="text-3xl font-bold text-yellow-600" id="average-score">0</p>
+          </div>
+        </div>
+
+        <h3 class="text-xl font-semibold mb-4">📈 ผู้ที่สอบผ่านเกณฑ์</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="py-2 px-4 border">ลำดับ</th>
+                <th class="py-2 px-4 border">ชื่อ-นามสกุล</th>
+                <th class="py-2 px-4 border">ชั้น</th>
+                <th class="py-2 px-4 border">โรงเรียน</th>
+                <th class="py-2 px-4 border">คะแนน</th>
+                <th class="py-2 px-4 border">วันที่ทดสอบ</th>
+              </tr>
+            </thead>
+            <tbody id="passed-students">
+              <!-- Data will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certificate Tab -->
+    <div id="certificate" class="tab-content">
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">🏆 เกียรติบัตร</h2>
+
+        <div class="mb-6">
+          <p class="mb-4">กรุณากรอกข้อมูลเพื่อพิมพ์เกียรติบัตร</p>
+          <form id="certificate-form" class="space-y-4 max-w-md">
+            <div>
+              <label for="cert-name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล</label>
+              <input type="text" id="cert-name" name="cert-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="cert-classroom" class="block text-sm font-medium text-gray-700 mb-1">ชั้นเรียน</label>
+              <select id="cert-classroom" name="cert-classroom" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- เลือกชั้นเรียน --</option>
+                                <option value="ป.1">ประถมศึกษาปีที่ 1</option>
+                                <option value="ป.2">ประถมศึกษาปีที่ 2</option>
+                                <option value="ป.3">ประถมศึกษาปีที่ 3</option>
+                                <option value="ป.4">ประถมศึกษาปีที่ 4</option>
+                                <option value="ป.5">ประถมศึกษาปีที่ 5</option>
+                                <option value="ป.6">ประถมศึกษาปีที่ 6</option>
+                            </select>
+            </div>
+            <div>
+              <label for="cert-school" class="block text-sm font-medium text-gray-700 mb-1">โรงเรียน</label>
+              <input type="text" id="cert-school" name="cert-school" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="cert-score" class="block text-sm font-medium text-gray-700 mb-1">คะแนน</label>
+              <input type="number" id="cert-score" name="cert-score" min="0" max="100" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                            แสดงเกียรติบัตร
+                        </button>
+          </form>
+        </div>
+
+        <div id="certificate-preview" class="hidden">
+          <div id="certificate-print" class="certificate bg-white p-8 mx-auto max-w-4xl text-center">
+            <div class="border-8 border-blue-100 p-8">
+              <div class="mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-blue-500" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h2 class="text-3xl font-bold text-blue-800 mb-4">เกียรติบัตร</h2>
+              <p class="text-lg mb-6">ขอมอบเกียรติบัตรฉบับนี้เพื่อแสดงว่า</p>
+              <p class="text-2xl font-bold mb-6" id="cert-display-name">-</p>
+              <p class="text-lg mb-6">
+                ชั้น <span id="cert-display-classroom">-</span> โรงเรียน <span id="cert-display-school">-</span><br>
+                                ได้ผ่านการทดสอบความรู้เกี่ยวกับวันต่อต้านยาเสพติด<br>
+                                ด้วยคะแนน <span id="cert-display-score" class="font-bold">-</span> คะแนน
+              </p>
+              <p class="text-lg mb-8">ออกให้ ณ วันที่ <span id="cert-display-date">-</span></p>
+              <div class="flex justify-center mt-8">
+                <div class="text-center mx-8">
+                  <div class="border-t-2 border-gray-400 pt-2 w-48">
+                    <p>ลงชื่อ</p>
+                    <p class="font-semibold">ผู้อำนวยการโรงเรียน</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 text-center no-print">
+            <button onclick="window.print()" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                            🖨️ พิมพ์เกียรติบัตร
+                        </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scores Tab -->
+    <div id="scores" class="tab-content">
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">📋 ตารางคะแนน</h2>
+
+        <div class="mb-4 flex justify-between items-center">
+          <div>
+            <input type="text" id="search-scores" placeholder="ค้นหา..." class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <button id="refresh-scores" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                        🔄 รีเฟรช
+                    </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="py-2 px-4 border">ลำดับ</th>
+                <th class="py-2 px-4 border">ชื่อ-นามสกุล</th>
+                <th class="py-2 px-4 border">ชั้น</th>
+                <th class="py-2 px-4 border">โรงเรียน</th>
+                <th class="py-2 px-4 border">คะแนน</th>
+                <th class="py-2 px-4 border">วันที่ทดสอบ</th>
+              </tr>
+            </thead>
+            <tbody id="scores-table">
+              <!-- Data will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+        let currentUser = null;
+        let quizQuestions = [];
+        let userAnswers = [];
+        let userScore = 0;
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUHydH3Z-inq7jqDvnFzdBps5rwMs9joIh-tv9KC0UL3oO2gskJ2lX98xoI3q4QW-Riw/exec';
+        const SHEET_ID = '1Uhay0AMiPzHXikqdGBnTbAie3pDvtVec86dWf6a1Uww';
+        
+        // Quiz questions
+        quizQuestions = [
+            {
+                question: "วันต่อต้านยาเสพติดโลกตรงกับวันที่เท่าไร?",
+                options: ["25 มิถุนายน", "26 มิถุนายน", "27 มิถุนายน", "28 มิถุนายน"],
+                answer: 1,
+                explanation: "วันต่อต้านยาเสพติดโลก (International Day Against Drug Abuse and Illicit Trafficking) ตรงกับวันที่ 26 มิถุนายนของทุกปี ซึ่งกำหนดโดยองค์การสหประชาชาติ"
+            },
+            {
+                question: "ข้อใดไม่ใช่ยาเสพติดให้โทษ?",
+                options: ["เฮโรอีน", "กัญชา", "วิตามินซี", "ยาบ้า"],
+                answer: 2,
+                explanation: "วิตามินซีเป็นสารอาหารที่มีประโยชน์ต่อร่างกาย ไม่ใช่ยาเสพติดให้โทษ ส่วนเฮโรอีน กัญชา และยาบ้า เป็นยาเสพติดให้โทษตามกฎหมาย"
+            },
+            {
+                question: "สัญลักษณ์ของวันต่อต้านยาเสพติดโลกคือข้อใด?",
+                options: ["ดอกกุหลาบสีขาว", "ดอกทานตะวัน", "ดอกป๊อปปี้", "ดอกกล้วยไม้"],
+                answer: 0,
+                explanation: "สัญลักษณ์ของวันต่อต้านยาเสพติดโลกคือดอกกุหลาบสีขาว ซึ่งแสดงถึงความบริสุทธิ์และชีวิตที่ปลอดจากยาเสพติด"
+            },
+            {
+                question: "ข้อใดเป็นผลกระทบของยาเสพติดต่อร่างกาย?",
+                options: ["ทำให้ร่างกายแข็งแรง", "ทำให้สมองทำงานได้ดีขึ้น", "ทำให้ระบบประสาทถูกทำลาย", "ทำให้มีอายุยืนยาว"],
+                answer: 2,
+                explanation: "ยาเสพติดส่งผลกระทบต่อร่างกายโดยทำให้ระบบประสาทถูกทำลาย ส่งผลเสียต่อสมองและอวัยวะต่างๆ ในร่างกาย"
+            },
+            {
+                question: "คำขวัญวันต่อต้านยาเสพติดโลกปี 2566 คือข้อใด?",
+                options: ["ร่วมแรงร่วมใจ ต้านภัยยาเสพติด", "คนไทยรวมพลัง เลิกยาเสพติดเพื่อชาติ", "รวมพลังทำความดี รักษาความสะอาด ต้านภัยยาเสพติด", "People First: Stop Stigma and Discrimination, Strengthen Prevention"],
+                answer: 3,
+                explanation: "คำขวัญวันต่อต้านยาเสพติดโลกปี 2566 คือ 'People First: Stop Stigma and Discrimination, Strengthen Prevention' ซึ่งมีความหมายว่า 'คนสำคัญที่สุด: หยุดการตีตราและการเลือกปฏิบัติ เสริมสร้างการป้องกัน'"
+            },
+            {
+                question: "ข้อใดไม่ใช่วิธีการป้องกันตนเองจากยาเสพติด?",
+                options: ["ศึกษาหาความรู้เกี่ยวกับโทษของยาเสพติด", "เลือกคบเพื่อนที่ดี", "ใช้เวลาว่างให้เป็นประโยชน์", "ลองยาเสพติดเพียงครั้งเดียวเพื่อรู้ว่ามันไม่ดี"],
+                answer: 3,
+                explanation: "การลองยาเสพติดแม้เพียงครั้งเดียวก็อาจทำให้ติดได้ และเป็นอันตรายต่อร่างกาย จึงไม่ใช่วิธีการป้องกันตนเองจากยาเสพติด"
+            },
+            {
+                question: "หน่วยงานใดในประเทศไทยที่รับผิดชอบหลักในการป้องกันและปราบปรามยาเสพติด?",
+                options: ["สำนักงาน ป.ป.ส.", "กระทรวงสาธารณสุข", "กระทรวงศึกษาธิการ", "กรมตำรวจ"],
+                answer: 0,
+                explanation: "สำนักงานคณะกรรมการป้องกันและปราบปรามยาเสพติด (ป.ป.ส.) เป็นหน่วยงานหลักที่รับผิดชอบในการป้องกันและปราบปรามยาเสพติดในประเทศไทย"
+            },
+            {
+                question: "ข้อใดเป็นสาเหตุสำคัญที่ทำให้เด็กและเยาวชนเข้าไปเกี่ยวข้องกับยาเสพติด?",
+                options: ["การเรียนหนังสือมากเกินไป", "ความอยากรู้อยากลอง", "การออกกำลังกายสม่ำเสมอ", "การอ่านหนังสือ"],
+                answer: 1,
+                explanation: "ความอยากรู้อยากลองเป็นสาเหตุสำคัญที่ทำให้เด็กและเยาวชนเข้าไปเกี่ยวข้องกับยาเสพติด โดยเฉพาะในวัยที่ต้องการค้นหาตัวเองและต้องการการยอมรับจากกลุ่มเพื่อน"
+            },
+            {
+                question: "ถ้าพบเพื่อนกำลังใช้ยาเสพติด นักเรียนควรทำอย่างไร?",
+                options: ["เข้าไปร่วมใช้ยาเสพติดด้วย", "เพิกเฉย ไม่สนใจ", "แจ้งครูหรือผู้ปกครองเพื่อให้ความช่วยเหลือ", "ถ่ายคลิปแล้วนำไปแชร์ในโซเชียลมีเดีย"],
+                answer: 2,
+                explanation: "การแจ้งครูหรือผู้ปกครองเพื่อให้ความช่วยเหลือเป็นวิธีที่ถูกต้อง เพราะจะทำให้เพื่อนได้รับการช่วยเหลือและบำบัดรักษาอย่างถูกวิธี"
+            },
+            {
+                question: "ข้อใดเป็นผลกระทบของยาเสพติดต่อสังคม?",
+                options: ["เศรษฐกิจของประเทศดีขึ้น", "ครอบครัวมีความสุขมากขึ้น", "อาชญากรรมลดลง", "ปัญหาอาชญากรรมเพิ่มขึ้น"],
+                answer: 3,
+                explanation: "ยาเสพติดส่งผลให้เกิดปัญหาอาชญากรรมเพิ่มขึ้น เนื่องจากผู้เสพอาจก่ออาชญากรรมเพื่อหาเงินมาซื้อยาเสพติด หรืออาจก่อเหตุรุนแรงเพราะฤทธิ์ของยา"
+            }
+        ];
+
+        // Function to show tab
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update active tab button
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Find the button that triggered this tab and make it active
+            document.querySelectorAll('.tab').forEach(tab => {
+                if (tab.textContent.includes(tabId === 'home' ? '🏠' : 
+                                            tabId === 'quiz' ? '📝' : 
+                                            tabId === 'dashboard' ? '📊' : 
+                                            tabId === 'certificate' ? '🏆' : '📋')) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Load data for specific tabs
+            if (tabId === 'scores') {
+                loadScores();
+            } else if (tabId === 'dashboard') {
+                loadDashboardData();
+            }
+        }
+
+        // Format date to Thai short format (day month year)
+        function formatThaiDate(dateString) {
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            const month = monthNames[date.getMonth()];
+            const year = date.getFullYear() + 543; // Convert to Buddhist Era
+            return `${day} ${month} ${year}`;
+        }
+
+        // Get current Thai date in short format
+        function getCurrentThaiDate() {
+            return formatThaiDate(new Date());
+        }
+
+        // Function to update quiz progress
+        function updateQuizProgress() {
+            const answeredCount = userAnswers.filter(answer => answer !== null).length;
+            const progressPercent = (answeredCount / quizQuestions.length) * 100;
+            
+            document.getElementById('quiz-progress').style.width = `${progressPercent}%`;
+            document.getElementById('answered-count').textContent = answeredCount;
+            document.getElementById('current-score').textContent = userScore;
+        }
+
+        // Function to generate quiz
+        function generateQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = '';
+            
+            // Shuffle questions for randomization
+            const shuffledQuestions = [...quizQuestions].sort(() => Math.random() - 0.5);
+            
+            // Reset user answers and score
+            userAnswers = Array(shuffledQuestions.length).fill(null);
+            userScore = 0;
+            
+            // Update progress
+            updateQuizProgress();
+            
+            // Generate each question
+            shuffledQuestions.forEach((q, qIndex) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-card';
+                questionDiv.id = `question-${qIndex}`;
+                
+                // Question header
+                const questionHeader = document.createElement('div');
+                questionHeader.className = 'flex items-start mb-4';
+                questionHeader.innerHTML = `
+                    <div class="question-number mr-4">${qIndex + 1}</div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">${q.question}</h3>
+                    </div>
+                `;
+                questionDiv.appendChild(questionHeader);
+                
+                // Options
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'space-y-3 ml-14';
+                
+                const optionLabels = ['ก', 'ข', 'ค', 'ง'];
+                q.options.forEach((option, oIndex) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'quiz-option';
+                    optionDiv.innerHTML = `
+                        <div class="option-label">${optionLabels[oIndex]}</div>
+                        <div>${option}</div>
+                    `;
+                    optionDiv.dataset.questionIndex = qIndex;
+                    optionDiv.dataset.optionIndex = oIndex;
+                    
+                    optionDiv.addEventListener('click', function() {
+                        // If already answered, do nothing
+                        if (userAnswers[qIndex] !== null) return;
+                        
+                        // Mark as selected
+                        document.querySelectorAll(`[data-question-index="${qIndex}"]`).forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                        
+                        // Record answer
+                        const selectedOption = parseInt(this.dataset.optionIndex);
+                        userAnswers[qIndex] = selectedOption;
+                        
+                        // Check if correct
+                        const isCorrect = selectedOption === shuffledQuestions[qIndex].answer;
+                        
+                        // Update score
+                        if (isCorrect) {
+                            userScore += 10;
+                        }
+                        
+                        // Update progress
+                        updateQuizProgress();
+                        
+                        // Show result
+                        setTimeout(() => {
+                            // Mark correct/incorrect
+                            document.querySelectorAll(`[data-question-index="${qIndex}"]`).forEach(opt => {
+                                const optIndex = parseInt(opt.dataset.optionIndex);
+                                if (optIndex === shuffledQuestions[qIndex].answer) {
+                                    opt.classList.add('correct');
+                                } else if (optIndex === selectedOption && !isCorrect) {
+                                    opt.classList.add('incorrect');
+                                }
+                            });
+                            
+                            // Show explanation
+                            const explanationDiv = document.createElement('div');
+                            explanationDiv.className = `explanation-box ${isCorrect ? 'correct' : 'incorrect'} ml-14`;
+                            explanationDiv.innerHTML = `
+                                <p class="font-medium">${isCorrect ? '✅ ถูกต้อง' : '❌ ไม่ถูกต้อง'}</p>
+                                <p>${shuffledQuestions[qIndex].explanation}</p>
+                            `;
+                            questionDiv.appendChild(explanationDiv);
+                            
+                            // Scroll to next unanswered question if available
+                            const nextUnansweredIndex = userAnswers.findIndex(ans => ans === null);
+                            if (nextUnansweredIndex !== -1) {
+                                const nextQuestion = document.getElementById(`question-${nextUnansweredIndex}`);
+                                if (nextQuestion) {
+                                    setTimeout(() => {
+                                        nextQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }, 500);
+                                }
+                            }
+                            
+                            // Check if all questions answered
+                            if (!userAnswers.includes(null)) {
+                                document.getElementById('final-score').textContent = userScore;
+                                document.getElementById('quiz-result').classList.remove('hidden');
+                                
+                                // Auto-fill certificate form
+                                document.getElementById('cert-name').value = currentUser.name;
+                                document.getElementById('cert-classroom').value = currentUser.classroom;
+                                document.getElementById('cert-school').value = currentUser.school;
+                                document.getElementById('cert-score').value = userScore;
+                                
+                                // Scroll to result
+                                setTimeout(() => {
+                                    document.getElementById('quiz-result').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }, 500);
+                            }
+                        }, 500);
+                    });
+                    
+                    optionsDiv.appendChild(optionDiv);
+                });
+                
+                questionDiv.appendChild(optionsDiv);
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        // Function to save quiz result
+        function saveQuizResult() {
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูล',
+                text: 'โปรดรอสักครู่...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const data = {
+                name: currentUser.name,
+                classroom: currentUser.classroom,
+                school: currentUser.school,
+                score: userScore,
+                date: getCurrentThaiDate(), // Now using short Thai date format
+                action: 'addRecord'
+            };
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'text/plain'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกข้อมูลสำเร็จ',
+                    text: 'ผลการทดสอบของคุณถูกบันทึกเรียบร้อยแล้ว',
+                    confirmButtonText: 'ตกลง'
+                });
+                
+                // Disable save button
+                document.getElementById('save-result').disabled = true;
+                document.getElementById('save-result').classList.add('bg-gray-400');
+                document.getElementById('save-result').classList.remove('bg-green-500', 'hover:bg-green-600');
+                document.getElementById('save-result').textContent = 'บันทึกข้อมูลแล้ว';
+                
+                // Enable certificate tab
+                showTab('certificate');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถบันทึกข้อมูลได้ โปรดลองอีกครั้ง',
+                    confirmButtonText: 'ตกลง'
+                });
+            });
+        }
+
+        // Function to load scores
+        function loadScores() {
+            document.getElementById('scores-table').innerHTML = '<tr><td colspan="6" class="text-center py-4">กำลังโหลดข้อมูล...</td></tr>';
+            
+            fetch(`${SCRIPT_URL}?action=getRecords&sheetId=${SHEET_ID}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.records && data.records.length > 0) {
+                    renderScoresTable(data.records);
+                } else {
+                    document.getElementById('scores-table').innerHTML = '<tr><td colspan="6" class="text-center py-4">ไม่พบข้อมูล</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('scores-table').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+            });
+        }
+
+        // Function to render scores table
+        function renderScoresTable(records) {
+            const tableBody = document.getElementById('scores-table');
+            tableBody.innerHTML = '';
+            
+            records.forEach((record, index) => {
+                const row = document.createElement('tr');
+                row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="py-2 px-4 border text-center">${index + 1}</td>
+                    <td class="py-2 px-4 border">${record.name}</td>
+                    <td class="py-2 px-4 border text-center">${record.classroom}</td>
+                    <td class="py-2 px-4 border">${record.school}</td>
+                    <td class="py-2 px-4 border text-center font-medium ${parseInt(record.score) >= 60 ? 'text-green-600' : 'text-red-600'}">${record.score}</td>
+                    <td class="py-2 px-4 border text-center">${record.date}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to load dashboard data
+        function loadDashboardData() {
+            fetch(`${SCRIPT_URL}?action=getRecords&sheetId=${SHEET_ID}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.records && data.records.length > 0) {
+                    // Update dashboard stats
+                    const records = data.records;
+                    const totalParticipants = records.length;
+                    const passedStudents = records.filter(r => parseInt(r.score) >= 60);
+                    const passedCount = passedStudents.length;
+                    const totalScore = records.reduce((sum, r) => sum + parseInt(r.score), 0);
+                    const averageScore = Math.round(totalScore / totalParticipants);
+                    
+                    document.getElementById('total-participants').textContent = totalParticipants;
+                    document.getElementById('passed-count').textContent = passedCount;
+                    document.getElementById('average-score').textContent = averageScore;
+                    
+                    // Render passed students table
+                    const passedTable = document.getElementById('passed-students');
+                    passedTable.innerHTML = '';
+                    
+                    if (passedStudents.length > 0) {
+                        passedStudents.sort((a, b) => parseInt(b.score) - parseInt(a.score));
+                        
+                        passedStudents.forEach((student, index) => {
+                            const row = document.createElement('tr');
+                            row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                            
+                            row.innerHTML = `
+                                <td class="py-2 px-4 border text-center">${index + 1}</td>
+                                <td class="py-2 px-4 border">${student.name}</td>
+                                <td class="py-2 px-4 border text-center">${student.classroom}</td>
+                                <td class="py-2 px-4 border">${student.school}</td>
+                                <td class="py-2 px-4 border text-center font-medium text-green-600">${student.score}</td>
+                                <td class="py-2 px-4 border text-center">${student.date}</td>
+                            `;
+                            
+                            passedTable.appendChild(row);
+                        });
+                    } else {
+                        passedTable.innerHTML = '<tr><td colspan="6" class="text-center py-4">ยังไม่มีผู้ที่สอบผ่านเกณฑ์</td></tr>';
+                    }
+                } else {
+                    document.getElementById('total-participants').textContent = '0';
+                    document.getElementById('passed-count').textContent = '0';
+                    document.getElementById('average-score').textContent = '0';
+                    document.getElementById('passed-students').innerHTML = '<tr><td colspan="6" class="text-center py-4">ไม่พบข้อมูล</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('passed-students').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+            });
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Login form submission
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const classroom = document.getElementById('classroom').value;
+                const school = document.getElementById('school').value;
+                
+                if (name && classroom && school) {
+                    currentUser = { name, classroom, school };
+                    
+                    // Update user info display
+                    document.getElementById('user-info-display').textContent = `${name} | ${classroom} | ${school}`;
+                    
+                    // Enable quiz tab
+                    document.getElementById('quiz-tab').disabled = false;
+                    
+                    // Generate quiz
+                    generateQuiz();
+                    
+                    // Show quiz tab
+                    showTab('quiz');
+                }
+            });
+            
+            // Save quiz result
+            document.getElementById('save-result').addEventListener('click', saveQuizResult);
+            
+            // Certificate form submission
+            document.getElementById('certificate-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('cert-name').value;
+                const classroom = document.getElementById('cert-classroom').value;
+                const school = document.getElementById('cert-school').value;
+                const score = document.getElementById('cert-score').value;
+                
+                if (name && classroom && school && score) {
+                    // Update certificate
+                    document.getElementById('cert-display-name').textContent = name;
+                    document.getElementById('cert-display-classroom').textContent = classroom;
+                    document.getElementById('cert-display-school').textContent = school;
+                    document.getElementById('cert-display-score').textContent = score;
+                    document.getElementById('cert-display-date').textContent = getCurrentThaiDate();
+                    
+                    // Show certificate
+                    document.getElementById('certificate-preview').classList.remove('hidden');
+                }
+            });
+            
+            // Search scores
+            document.getElementById('search-scores').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#scores-table tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Refresh scores
+            document.getElementById('refresh-scores').addEventListener('click', loadScores);
+        });
+  </script>
+  <script>
+    (function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'952375cff73945be',t:'MTc1MDM0MDY1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();
+  </script>
+</body>
+
+</html>
