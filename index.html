@@ -205,9 +205,14 @@
                         <label for="school" class="block text-sm font-medium text-gray-700 mb-1">โรงเรียน</label>
                         <input type="text" id="school" name="school" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
-                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
-                        เริ่มทำแบบทดสอบ
-                    </button>
+                    <div class="flex space-x-2">
+                        <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                            เริ่มทำแบบทดสอบ
+                        </button>
+                        <button type="reset" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                            ล้างข้อมูล
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -225,6 +230,7 @@
                 <div class="mb-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
                     <p class="font-medium">📋 คำชี้แจง: แบบทดสอบมีทั้งหมด 10 ข้อ ข้อละ 10 คะแนน</p>
                     <p>เมื่อตอบคำถามแล้วจะแสดงเฉลยและคำอธิบายทันที</p>
+                    <p class="text-red-600 font-medium mt-2">* ต้องได้คะแนนอย่างน้อย 60% จึงจะสามารถบันทึกผลการทดสอบได้</p>
                 </div>
                 
                 <!-- Progress Bar -->
@@ -249,12 +255,24 @@
                 <div id="quiz-result" class="mt-8 p-6 bg-blue-50 rounded-lg text-center hidden">
                     <h3 class="text-2xl font-bold mb-2">🎉 ผลการทดสอบ</h3>
                     <p class="text-xl mb-4">คะแนนของคุณ: <span id="final-score" class="font-bold text-blue-600">0</span> / 100</p>
+                    <div id="pass-message" class="mb-4 p-3 bg-green-100 text-green-800 rounded-lg hidden">
+                        <p class="font-medium">✅ ยินดีด้วย! คุณผ่านเกณฑ์การทดสอบ</p>
+                    </div>
+                    <div id="fail-message" class="mb-4 p-3 bg-red-100 text-red-800 rounded-lg hidden">
+                        <p class="font-medium">❌ คุณไม่ผ่านเกณฑ์การทดสอบ (60%) กรุณาทำแบบทดสอบใหม่อีกครั้ง</p>
+                    </div>
                     <div class="flex justify-center">
-                        <button id="save-result" class="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition duration-300 flex items-center">
+                        <button id="save-result" class="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition duration-300 flex items-center hidden">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
                             บันทึกผลการทดสอบ
+                        </button>
+                        <button id="retry-quiz" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg transition duration-300 flex items-center hidden ml-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                            </svg>
+                            ทำแบบทดสอบใหม่
                         </button>
                     </div>
                 </div>
@@ -424,6 +442,7 @@
         let userScore = 0;
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUHydH3Z-inq7jqDvnFzdBps5rwMs9joIh-tv9KC0UL3oO2gskJ2lX98xoI3q4QW-Riw/exec';
         const SHEET_ID = '1Uhay0AMiPzHXikqdGBnTbAie3pDvtVec86dWf6a1Uww';
+        const PASS_THRESHOLD = 60; // 60% passing threshold
         
         // Quiz questions
         quizQuestions = [
@@ -656,11 +675,27 @@
                                 document.getElementById('final-score').textContent = userScore;
                                 document.getElementById('quiz-result').classList.remove('hidden');
                                 
-                                // Auto-fill certificate form
-                                document.getElementById('cert-name').value = currentUser.name;
-                                document.getElementById('cert-classroom').value = currentUser.classroom;
-                                document.getElementById('cert-school').value = currentUser.school;
-                                document.getElementById('cert-score').value = userScore;
+                                // Check if passed threshold
+                                const passed = userScore >= PASS_THRESHOLD;
+                                if (passed) {
+                                    document.getElementById('pass-message').classList.remove('hidden');
+                                    document.getElementById('fail-message').classList.add('hidden');
+                                    document.getElementById('save-result').classList.remove('hidden');
+                                    document.getElementById('retry-quiz').classList.add('hidden');
+                                } else {
+                                    document.getElementById('pass-message').classList.add('hidden');
+                                    document.getElementById('fail-message').classList.remove('hidden');
+                                    document.getElementById('save-result').classList.add('hidden');
+                                    document.getElementById('retry-quiz').classList.remove('hidden');
+                                }
+                                
+                                // Auto-fill certificate form if passed
+                                if (passed) {
+                                    document.getElementById('cert-name').value = currentUser.name;
+                                    document.getElementById('cert-classroom').value = currentUser.classroom;
+                                    document.getElementById('cert-school').value = currentUser.school;
+                                    document.getElementById('cert-score').value = userScore;
+                                }
                                 
                                 // Scroll to result
                                 setTimeout(() => {
@@ -680,6 +715,17 @@
 
         // Function to save quiz result
         function saveQuizResult() {
+            // Check if score meets threshold
+            if (userScore < PASS_THRESHOLD) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถบันทึกผลได้',
+                    text: 'คุณต้องได้คะแนนอย่างน้อย 60% จึงจะสามารถบันทึกผลการทดสอบได้',
+                    confirmButtonText: 'ตกลง'
+                });
+                return;
+            }
+            
             Swal.fire({
                 title: 'กำลังบันทึกข้อมูล',
                 text: 'โปรดรอสักครู่...',
@@ -861,6 +907,18 @@
             // Save quiz result
             document.getElementById('save-result').addEventListener('click', saveQuizResult);
             
+            // Retry quiz
+            document.getElementById('retry-quiz').addEventListener('click', function() {
+                // Generate new quiz
+                generateQuiz();
+                
+                // Hide result
+                document.getElementById('quiz-result').classList.add('hidden');
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
             // Certificate form submission
             document.getElementById('certificate-form').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -902,5 +960,5 @@
             document.getElementById('refresh-scores').addEventListener('click', loadScores);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9523c8f604f155a1',t:'MTc1MDM0NDA2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9523de5bb3f1f305',t:'MTc1MDM0NDkzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
